@@ -1,0 +1,37 @@
+services:
+  redpanda:
+    image: redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=1G
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+    ports: ["19092:19092"]
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_PASSWORD: predictops
+    ports: ["8123:8123"]
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    volumes:
+      - ./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    depends_on: [redpanda]
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_INSTALL_PLUGINS: grafana-clickhouse-datasource 4.23.0
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/predictops.json
+    ports: ["3000:3000"]
+    volumes:
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/clickhouse.yml:ro
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/predictops.yml:ro
+      - ./grafana/predictops.json:/var/lib/grafana/dashboards/predictops.json:ro
+    depends_on: [clickhouse]

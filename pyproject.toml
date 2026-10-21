@@ -1,0 +1,16 @@
+[project]
+name = "predictops"
+version = "0.1.0"
+description = "Predict infrastructure failures before they happen from streaming metrics and logs"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "numpy>=1.26",
+    "scikit-learn>=1.5",
+    "confluent-kafka>=2.5",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

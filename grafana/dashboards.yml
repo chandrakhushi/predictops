@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: predictops
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards
